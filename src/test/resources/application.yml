@@ -1,0 +1,48 @@
+spring:
+  test.database.replace: none
+  main.banner-mode: 'off'
+  jpa.properties:
+    hibernate.show_sql: false # true|*false, true for log to console directly
+    hibernate.hbm2ddl.auto: none # *none|create|create-drop|update|validate
+  datasource:
+    sql-script-encoding: UTF-8
+    continue-on-error: false
+    url: @db.url@
+    username: @db.username@
+    password: @db.password@
+    initialization-mode: @db.init-mode@ # never|embedded|always
+    # available when initialization-mode=embedded|always
+    schema:
+      - classpath:schema.sql
+    driver-class-name: @db.driver-class@
+    # hikari config https://github.com/brettwooldridge/HikariCP#configuration-knobs-baby
+    hikari:
+      pool-name: HikariPool4Test
+      maximum-pool-size: 5
+      minimum-idle: 1
+logging:
+  file: target/app.logs
+  #pattern.dateformat: yyyy-MM-dd HH:mm:ss.SSS,GMT+8:00
+  level: # TRACE < DEBUG < INFO < WARN < ERROR < FATAL < OFF
+    root: ERROR
+    com.github.rj: WARN # INFO - show active profiles and started time
+
+    #---- spring ----#
+    #org.springframework: WARN
+
+    #---- spring-boot ----#
+    #org.springframework.boot: WARN
+    org.springframework.boot.context.embedded: TRACE
+    org.springframework.boot.web.embedded.netty.NettyWebServer: INFO # INFO - show server port
+
+    #---- hibernate sql ----#
+    #org.hibernate.SQL: DEBUG                             # DEBUG for log by logger
+    #org.hibernate.type.descriptor.sql.BasicBinder: TRACE # TRACE for show sql param value, such as 'binding parameter [N] as [SQL-TYPE] - [VALUE]'
+
+    #---- hibernate jpql ----#
+    #org.hibernate.engine.query.spi.HQLQueryPlan: TRACE   # TRACE for show jpql
+    #org.hibernate.engine.spi.QueryParameters: TRACE      # TRACE for show jpql query parameter
+    #org.hibernate.type.descriptor.converter.AttributeConverterSqlTypeDescriptorAdapter: DEBUG # DEBUG for value convert, such as 'Converted value on binding : Enabled -> 2'
+
+    #---- hibernate transaction ----#
+    #org.hibernate.engine.transaction: DEBUG # DEBUG for show transaction start/end

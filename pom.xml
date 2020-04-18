@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.github.rj</groupId>
+  <artifactId>spring-boot-issue</artifactId>
+  <version>0.1-SNAPSHOT</version>
+  <packaging>jar</packaging>
+  <description>RJ's spring-boot issues</description>
+  <properties>
+    <!-- maven global setting-->
+    <java.version>1.8</java.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <maven.compiler.source>${java.version}</maven.compiler.source>
+    <maven.compiler.target>${java.version}</maven.compiler.target>
+    <maven.compiler.compilerVersion>${java.version}</maven.compiler.compilerVersion>
+
+    <!-- database setting  -->
+    <db.host>localhost</db.host>
+    <db.port>~</db.port>
+    <db.name>testdb</db.name>
+    <db.username>tester</db.username>
+    <db.password>password</db.password>
+    <db.url>~</db.url>
+    <db.driver-class>~</db.driver-class>
+
+    <!-- versions -->
+    <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
+    <kotlin.version>1.3.72</kotlin.version>
+    <junit5.version>5.6.2</junit5.version>
+    <spring-boot.version>2.2.6.RELEASE</spring-boot.version>
+  </properties>
+  <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
+    <testResources>
+      <testResource>
+        <directory>src/test/resources</directory>
+        <filtering>true</filtering>
+      </testResource>
+    </testResources>
+    <sourceDirectory>${project.basedir}/src/main/kotlin</sourceDirectory>
+    <testSourceDirectory>${project.basedir}/src/test/kotlin</testSourceDirectory>
+    <plugins>
+      <plugin>
+        <groupId>org.jetbrains.kotlin</groupId>
+        <artifactId>kotlin-maven-plugin</artifactId>
+        <version>${kotlin.version}</version>
+        <executions>
+          <execution>
+            <id>compile</id>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>test-compile</id>
+            <goals>
+              <goal>test-compile</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <!-- 1.6, 1.8, 9, 10, 11, 12 -->
+          <jvmTarget>${java.version}</jvmTarget>
+          <!--<nowarn>true</nowarn>-->
+          <!-- 1.0, 1.1, 1.2, 1.3 -->
+          <languageVersion>1.3</languageVersion>
+          <!-- 1.0, 1.1, 1.2, 1.3 -->
+          <apiVersion>1.3</apiVersion>
+          <compilerPlugins>
+            <plugin>spring</plugin>
+            <plugin>jpa</plugin>
+          </compilerPlugins>
+        </configuration>
+        <dependencies>
+          <!-- https://kotlinlang.org/docs/reference/compiler-plugins.html#all-open-compiler-plugin -->
+          <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-maven-allopen</artifactId>
+            <version>${kotlin.version}</version>
+          </dependency>
+          <!-- https://kotlinlang.org/docs/reference/compiler-plugins.html#no-arg-compiler-plugin -->
+          <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-maven-noarg</artifactId>
+            <version>${kotlin.version}</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>${spring-boot.version}</version>
+        <configuration>
+          <!-- 
+            https://docs.spring.io/spring-boot/docs/current/maven-plugin/run-mojo.html#fork
+            https://github.com/spring-projects/spring-boot/issues/18948
+            Since spring-boot-2.2.0, this property's default value change from 'false' to 'true'.
+            And we met two probloms:
+            1. It make IntelliJ IDEA debug break point unavilable.
+            2. Stop spring-boot app but it keep running within IntelliJ IDEA when start with 
+               'mvn spring-boot:run'.
+            The default value 'true' is suitable for 'spring-boot-devtools'.
+            We set to 'false' because we don't need it.
+            But we can use '-Dspring-boot.run.fork=false' to change it with command line param.
+          -->
+          <fork>false</fork>
+        </configuration>
+        <executions>
+          <execution>
+            <id>repackage</id>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>3.1.0</version>
+        <configuration>
+          <delimiters>
+            <!-- make yml file support maven properties (by @...@)-->
+            <delimiter>@</delimiter>
+          </delimiters>
+          <useDefaultDelimiters>false</useDefaultDelimiters>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.22.2</version>
+        <configuration>
+          <includes>
+            <include>**/*Test.java</include>
+            <include>**/*Tests.java</include>
+            <include>**/*Test.kt</include>
+            <include>**/*Tests.kt</include>
+          </includes>
+        </configuration>
+        <dependencies>
+          <!-- junit5  -->
+          <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit5.version}</version>
+          </dependency>
+          <!-- allows junit5 backward compatibility with junit4 or junit3  -->
+          <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
+            <version>${junit5.version}</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+    </plugins>
+  </build>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-dependencies</artifactId>
+        <version>${spring-boot.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+  <dependencies>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+
+    <!-- kotlin -->
+    <dependency>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-stdlib</artifactId>
+      <version>${kotlin.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-reflect</artifactId>
+      <version>${kotlin.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.persistence</groupId>
+      <artifactId>javax.persistence-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.data</groupId>
+      <artifactId>spring-data-jpa</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-autoconfigure</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-entitymanager</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate.validator</groupId>
+      <artifactId>hibernate-validator</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.yaml</groupId>
+      <artifactId>snakeyaml</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jcl-over-slf4j</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+
+    <!-- test -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  <profiles>
+    <profile>
+      <id>embedded-h2</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+        <db.init-mode>embedded</db.init-mode>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>com.h2database</groupId>
+          <artifactId>h2</artifactId>
+          <scope>runtime</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>postgres</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <properties>
+        <db.init-mode>never</db.init-mode>
+        <db.port>5432</db.port>
+        <db.url><![CDATA[jdbc:postgresql://${db.host}:${db.port}/${db.name}]]> </db.url>
+        <db.driver-class>org.postgresql.Driver</db.driver-class>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>org.postgresql</groupId>
+          <artifactId>postgresql</artifactId>
+          <scope>runtime</scope>
+        </dependency>
+        <dependency>
+          <groupId>com.zaxxer</groupId>
+          <artifactId>HikariCP</artifactId>
+          <scope>runtime</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+  </profiles>
+  <url>https://github.com/start-kotlin/spring-boot-issue</url>
+  <scm>
+    <url>https://github.com/start-kotlin/spring-boot-issue.git</url>
+  </scm>
+  <developers>
+    <developer>
+      <name>RJ.Hwang</name>
+      <email>rongjihuang@gmail.com</email>
+    </developer>
+  </developers>
+</project>
